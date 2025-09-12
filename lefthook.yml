@@ -1,0 +1,29 @@
+# Copyright (c) 2025 maloma7. All rights reserved.
+# SPDX-License-Identifier: MIT
+
+# Lefthook configuration for git hooks
+# https://github.com/evilmartians/lefthook
+
+pre-commit:
+  parallel: false
+  commands:
+    branch-protection:
+      run: |
+        branch=$(git rev-parse --abbrev-ref HEAD)
+        if [ "$branch" = "staging" ] || [ "$branch" = "production" ]; then
+          echo "Direct commits to $branch branch are not allowed"
+          exit 1
+        fi
+    lint-fix:
+      run: bunx @biomejs/biome check --write .
+      stage_fixed: true
+    format:
+      run: bunx @biomejs/biome format --write .
+      stage_fixed: true
+    typecheck:
+      run: bunx tsc --noEmit
+
+commit-msg:
+  commands:
+    commitlint:
+      run: bunx commitlint --edit {1}

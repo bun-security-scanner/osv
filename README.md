@@ -1,108 +1,290 @@
-<img src="https://bun.com/logo.png" height="36" />
+<!--
+Copyright (c) 2025 maloma7. All rights reserved.
+SPDX-License-Identifier: MIT
+-->
 
-# Bun Security Scanner Template
+<img src="docs/icons/logo.svg" width="100%" alt="Bun OSV Scanner" />
 
-A template for creating a security scanner for Bun's package installation
-process. Security scanners scan packages against your threat intelligence feeds
-and control whether installations proceed based on detected threats.
+# Bun OSV Scanner
 
-📚 [**Full documentation**](https://bun.com/docs/install/security-scanner-api)
+A production-grade security scanner for [Bun](https://bun.sh/) that integrates with [OSV.dev](https://osv.dev/) (Open Source Vulnerabilities) to detect known vulnerabilities in npm packages during installation.
+
+[![npm version](https://img.shields.io/npm/v/bun-osv-scanner?color=dc2626)](https://npmjs.com/package/bun-osv-scanner)
+[![npm downloads](https://img.shields.io/npm/dm/bun-osv-scanner?color=dc2626)](https://npmjs.com/package/bun-osv-scanner)
+[![License: MIT](https://img.shields.io/badge/License-MIT-dc2626)](LICENSE)
+[![Built with Claude](https://img.shields.io/badge/Built_with-Claude-dc2626?style=flat&logo=claude&logoColor=dc2626)](https://anthropic.com/claude-code)
+[![Checked with Biome](https://img.shields.io/badge/Checked_with-Biome-dc2626?style=flat&logo=biome&logoColor=dc2626)](https://biomejs.dev)
+[![Secured with Lefthook](https://img.shields.io/badge/Secured_with-Lefthook-dc2626?style=flat&logo=lefthook&logoColor=dc2626)](https://lefthook.dev/)
+
+## What is OSV.dev?
+
+[OSV.dev](https://osv.dev/) is Google's open source vulnerability database that aggregates and distributes vulnerability information for open source projects. It provides:
+
+- **Comprehensive Coverage**: Vulnerabilities from multiple sources (npm, PyPI, Go, Rust, etc.)
+- **Structured Data**: Machine-readable vulnerability information with precise version ranges
+- **Real-time Updates**: Continuously updated with the latest security advisories
+- **Authoritative Source**: Maintained by Google and the open source community
+
+## Features
+
+- **Real-time Scanning**: Checks packages against OSV.dev during installation
+- **High Performance**: Efficient batch queries with smart deduplication
+- **Fail-safe**: Never blocks installations due to scanner errors
+- **Structured Logging**: Configurable logging levels with contextual information
+- **Precise Matching**: Accurate vulnerability-to-package version matching
+- **Configurable**: Environment variable configuration for all settings
+- **Well Tested**: Comprehensive test suite with edge case coverage
+
+## Installation
+
+**No API keys or registration required** - completely free to use with zero setup beyond installation.
+
+```bash
+# Install as a dev dependency
+bun add -d bun-osv-scanner
+```
+
+## Configuration
+
+### 1. Enable the Scanner
+
+Add to your `bunfig.toml`:
+
+```toml
+[install.security]
+scanner = "bun-osv-scanner"
+```
+
+### 2. Optional: Configuration Options
+
+The scanner can be configured via environment variables:
+
+```bash
+# Logging level (debug, info, warn, error)
+export OSV_LOG_LEVEL=info
+
+# Custom OSV API base URL (optional)
+export OSV_API_BASE_URL=https://api.osv.dev/v1
+
+# Request timeout in milliseconds (default: 30000)
+export OSV_TIMEOUT_MS=30000
+
+# Disable batch queries (default: false)
+export OSV_DISABLE_BATCH=false
+```
 
 ## How It Works
 
-When packages are installed via Bun, your security scanner:
+### Security Scanning Process
 
-1. **Receives** package information (name, version)
-2. **Queries** your threat intelligence API
-3. **Validates** the response data
-4. **Categorizes** threats by severity
-5. **Returns** advisories to control installation (empty array if safe)
+1. **Package Detection**: Bun provides package information during installation
+2. **Smart Deduplication**: Eliminates duplicate package@version queries
+3. **Batch Querying**: Uses OSV.dev's efficient `/querybatch` endpoint
+4. **Vulnerability Matching**: Precisely matches vulnerabilities to installed versions
+5. **Severity Assessment**: Analyzes CVSS scores and database-specific severity
+6. **Advisory Generation**: Creates actionable security advisories
 
 ### Advisory Levels
 
-- **Fatal** (`level: 'fatal'`): Installation stops immediately
-  - Examples: malware, token stealers, backdoors, critical vulnerabilities
-- **Warning** (`level: 'warn'`): User prompted for confirmation
-  - In TTY: User can choose to continue or cancel
-  - Non-TTY: Installation automatically cancelled
-  - Examples: protestware, adware, deprecated packages
+The scanner generates two types of security advisories:
 
-All advisories are always displayed to the user regardless of level.
+#### Fatal (Installation Blocked)
+- **CVSS Score**: ≥ 7.0 (High/Critical)
+- **Database Severity**: CRITICAL or HIGH
+- **Action**: Installation is immediately blocked
+- **Examples**: Remote code execution, privilege escalation, data exposure
 
-### Error Handling
+#### Warning (User Prompted)
+- **CVSS Score**: < 7.0 (Medium/Low)
+- **Database Severity**: MEDIUM, LOW, or unspecified
+- **Action**: User is prompted to continue or cancel
+- **TTY**: Interactive choice presented
+- **Non-TTY**: Installation automatically cancelled
+- **Examples**: Denial of service, information disclosure, deprecation warnings
 
-If your `scan` function throws an error, it will be gracefully handled by Bun, but the installation process **will be cancelled** as a defensive precaution.
+### Error Handling Philosophy
 
-### Validation
+The scanner follows a **fail-safe** approach:
+- Network errors don't block installations
+- Malformed responses are logged but don't halt the process
+- Scanner crashes return empty advisory arrays (allows installation)
+- Only genuine security threats should prevent package installation
 
-When fetching threat feeds over the network, use schema validation  
-(e.g., Zod) to ensure data integrity. Invalid responses should fail immediately
-rather than silently returning empty advisories.
+## Usage Examples
 
-```typescript
-import {z} from 'zod';
+### Basic Usage
 
-const ThreatFeedItemSchema = z.object({
-	package: z.string(),
-	version: z.string(),
-	url: z.string().nullable(),
-	description: z.string().nullable(),
-	categories: z.array(z.enum(['backdoor', 'botnet' /* ... */])),
-});
+```bash
+# Scanner runs automatically during installation
+bun install express
+# -> Checks express and all dependencies for vulnerabilities
+
+bun add lodash@4.17.20
+# -> May warn about known lodash vulnerabilities in older versions
 ```
 
-### Useful Bun APIs
+### Development Usage
 
-Bun provides several built-in APIs that are particularly useful for security scanner:
+```bash
+# Enable debug logging to see detailed scanning information
+OSV_LOG_LEVEL=debug bun install
 
-- [**Security scanner API Reference**](https://bun.com/docs/install/security-scanner-api): Complete API documentation for security scanners
-- [**`Bun.semver.satisfies()`**](https://bun.com/docs/api/semver): Essential for checking if package versions match vulnerability ranges. No external dependencies needed.
+# Test with a known vulnerable package
+bun add event-stream@3.3.6
+# -> Should trigger security advisory
+```
 
-  ```typescript
-  if (Bun.semver.satisfies(version, '>=1.0.0 <1.2.5')) {
-  	// Version is vulnerable
-  }
-  ```
+### Configuration Examples
 
-- [**`Bun.hash`**](https://bun.com/docs/api/hashing#bun-hash): Fast hashing for package integrity checks
-- [**`Bun.file`**](https://bun.com/docs/api/file-io): Efficient file I/O, could be used for reading local threat databases
+```bash
+# Increase timeout for slow networks
+OSV_TIMEOUT_MS=60000 bun install
+
+# Use custom OSV instance (advanced)
+OSV_API_BASE_URL=https://api.custom-osv.dev/v1 bun install
+```
+
+## Architecture
+
+The scanner is built with a modular, production-ready architecture:
+
+```
+src/
+├── api/
+│   └── client.ts           # OSV.dev API client with batch support
+├── scanner/
+│   └── processor.ts        # Vulnerability processing and advisory generation
+├── utils/
+│   ├── retry.ts           # Robust retry logic with exponential backoff
+│   ├── semver.ts          # OSV semver range matching
+│   └── severity.ts        # CVSS and severity assessment
+├── constants.ts           # Centralized configuration management
+├── logger.ts             # Structured logging with configurable levels
+├── schema.ts             # Zod schemas for OSV API responses
+├── types.ts              # TypeScript type definitions
+└── index.ts              # Main scanner implementation
+```
+
+### Key Design Principles
+
+1. **Separation of Concerns**: Each module has a single, well-defined responsibility
+2. **Error Isolation**: Failures in one component don't cascade to others
+3. **Performance Optimization**: Batch processing, deduplication, and concurrent requests
+4. **Observability**: Comprehensive logging for debugging and monitoring
+5. **Type Safety**: Full TypeScript coverage with runtime validation
 
 ## Testing
 
-This template includes tests for a known malicious package version.
-Customize the test file as needed.
-
 ```bash
+# Run the test suite
 bun test
+
+# Run with coverage
+bun test --coverage
+
+# Type checking
+bun run typecheck
+
+# Linting
+bun run lint
 ```
 
-## Publishing Your Provider
+### Test Coverage
 
-Publish your security scanner to npm:
+- Known vulnerable packages detection
+- Safe package verification  
+- Multiple package scenarios
+- Version-specific vulnerability matching
+- Network failure handling
+- Edge cases and error conditions
+
+## Development
+
+### Building from Source
 
 ```bash
-bun publish
+git clone https://github.com/maloma7/bun-osv-scanner.git
+cd bun-osv-scanner
+bun install
+bun run build
 ```
 
-Users can now install your provider and add it to their `bunfig.toml` configuration.
+### Contributing
 
-To test locally before publishing, use [`bun link`](https://bun.sh/docs/cli/link):
+We do not accept pull requests as this package is actively maintained. However, we appreciate if developers report bugs or suggest features by [opening an issue](https://github.com/maloma7/bun-osv-scanner/issues/new).
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
+
+## API Reference
+
+### OSV.dev Integration
+
+This scanner integrates with the following OSV.dev endpoints:
+
+- **POST /v1/querybatch**: Batch vulnerability queries for multiple packages
+- **POST /v1/query**: Individual package queries with pagination support
+
+For complete OSV.dev API documentation, visit: https://google.github.io/osv.dev/api/
+
+### Configuration Reference
+
+| Environment Variable | Default | Description |
+|---------------------|---------|-------------|
+| `OSV_LOG_LEVEL` | `info` | Logging level: debug, info, warn, error |
+| `OSV_API_BASE_URL` | `https://api.osv.dev/v1` | OSV API base URL |
+| `OSV_TIMEOUT_MS` | `30000` | Request timeout in milliseconds |
+| `OSV_DISABLE_BATCH` | `false` | Disable batch queries (use individual queries) |
+
+## Troubleshooting
+
+### Common Issues
+
+**Scanner not running during installation?**
+- Verify `bunfig.toml` configuration
+- Check that the package is installed as a dev dependency
+- Enable debug logging: `OSV_LOG_LEVEL=debug bun install`
+
+**Network timeouts?**
+- Increase timeout: `OSV_TIMEOUT_MS=60000`
+- Check internet connectivity to osv.dev
+- Consider corporate firewall restrictions
+
+**Too many false positives?**
+- OSV.dev data is authoritative - verify vulnerabilities manually
+- Check if you're using an outdated package version
+- Report false positives to the OSV.dev project
+
+### Debug Mode
+
+Enable comprehensive debug output:
 
 ```bash
-# In your provider directory
-bun link
-
-# In your test project
-bun link @acme/bun # this is the name in package.json of your provider
+OSV_LOG_LEVEL=debug bun install your-package
 ```
 
-## Contributing
+This shows:
+- Package deduplication statistics
+- API request/response details  
+- Vulnerability matching decisions
+- Performance timing information
 
-This is a template repository. Fork it and customize for your organization's
-security requirements.
+## License
 
-## Support
+MIT License - see the [LICENSE](LICENSE) file for details.
 
-For docs and questions, see the [Bun documentation](https://bun.com/docs/install/security-scanner-api) or [Join our Discord](https://bun.com/discord).
+## Acknowledgments
 
-For template issues, please open an issue in this repository.
+- **OSV.dev Team**: For maintaining the comprehensive vulnerability database
+- **Bun Team**: For the innovative Security Scanner API
+
+## Related Projects
+
+- [Bun Security Scanner API](https://bun.com/docs/install/security-scanner-api)
+- [OSV.dev](https://osv.dev/) - Open Source Vulnerabilities database
+
+---
+
+**Last Updated**: September 12, 2025  
+**Version**: 1.0.0
+
+*This documentation is a living document and will be updated as the project evolves and new features are added.*

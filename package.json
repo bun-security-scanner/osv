@@ -1,25 +1,70 @@
 {
-	"name": "@acme/bun",
-	"description": "Bun security scanner for acmecorp",
+	"name": "bun-osv-scanner",
 	"version": "1.0.0",
-	"author": "Acme",
+	"description": "OSV vulnerability scanner for Bun projects",
+	"author": "maloma7",
 	"license": "MIT",
-	"exports": {
-		"./package.json": "./package.json",
-		".": "./src/index.ts"
+	"type": "module",
+	"types": "./src/index.ts",
+	"exports": "./src/index.ts",
+	"packageManager": "bun@1.2.21",
+	"engines": {
+		"bun": ">=1.0.0"
 	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/acme/bun"
-	},
+	"files": [
+		"src/**/*.ts",
+		"!src/**/__tests__",
+		"package.json",
+		"README.md",
+		"LICENSE",
+		"CHANGELOG.md",
+		"SECURITY.md"
+	],
 	"keywords": [
 		"bun",
+		"osv",
 		"security",
-		"provider"
+		"security-scanner",
+		"vulnerability",
+		"vulnerability-scanner",
+		"scanner",
+		"audit",
+		"dependencies"
 	],
+	"homepage": "https://bun-osv-scanner.com",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/maloma7/bun-osv-scanner"
+	},
+	"bugs": {
+		"url": "https://github.com/maloma7/bun-osv-scanner/issues"
+	},
+	"funding": {
+		"type": "github",
+		"url": "https://github.com/sponsors/maloma7"
+	},
+	"scripts": {
+		"dev": "bun run typecheck --watch",
+		"build": "bun run check",
+		"test": "bun test",
+		"lint": "bunx @biomejs/biome check .",
+		"lint:fix": "bunx @biomejs/biome check --write .",
+		"format": "bunx @biomejs/biome format --write .",
+		"typecheck": "bunx tsc --noEmit",
+		"clean": "rm -rf dist build node_modules/.cache",
+		"check": "bun run lint && bun run typecheck && bun run test",
+		"prepare": "bunx lefthook install"
+	},
+	"dependencies": {
+		"zod": "^4.1.8"
+	},
 	"devDependencies": {
-		"@types/bun": "latest",
-		"prettier": "^3.6.2",
+		"@biomejs/biome": "^2.2.4",
+		"@commitlint/cli": "^19.8.1",
+		"@commitlint/config-conventional": "^19.8.1",
+		"@tsconfig/bun": "^1.0.8",
+		"@types/bun": "^1.2.21",
+		"lefthook": "^1.13.0",
 		"typescript": "^5.9.2"
 	}
 }

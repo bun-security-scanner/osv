@@ -1,0 +1,97 @@
+name: Feature Request
+description: Suggest a new feature or enhancement
+title: "[Feature]: "
+labels: ["feature"]
+assignees:
+  - maloma7
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to suggest a feature! Please fill out the information below to help us understand your request.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission Checks
+      description: Please verify these items before submitting
+      options:
+        - label: I have searched existing issues to ensure this feature hasn't been requested
+          required: true
+        - label: I have read the project documentation and README
+          required: true
+        - label: This feature is within the scope of bun-osv-scanner (security scanning for Bun)
+          required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve? What use case are you trying to address?
+      placeholder: I would like to be able to... because...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the feature you'd like to see implemented
+      placeholder: I think it would be helpful if...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you considered alternative solutions or workarounds?
+      placeholder: I've also considered...
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature to you?
+      options:
+        - Low (Nice to have)
+        - Medium (Would improve my workflow)
+        - High (Blocks my workflow or significantly impacts usage)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: Implementation Complexity
+      description: How complex do you think this feature would be to implement?
+      options:
+        - Simple (Small change or configuration option)
+        - Medium (New functionality, some code changes)
+        - Complex (Major architectural changes or new dependencies)
+        - Unknown
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Usage Examples
+      description: Provide examples of how this feature would be used
+      placeholder: |
+        Example configuration:
+        ```toml
+        [install.security]
+        scanner = "bun-osv-scanner"
+        new_option = "value"
+        ```
+        
+        Example command:
+        ```bash
+        bun install --with-new-feature
+        ```
+      render: markdown
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, links, or information about the feature request

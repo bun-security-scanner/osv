@@ -1,0 +1,20 @@
+/**
+ * Copyright (c) 2025 maloma7. All rights reserved.
+ * SPDX-License-Identifier: MIT
+ */
+
+// Bun Security Scanner API types
+// These will be moved to @types/bun when officially released
+
+// OSV API related types
+export type FatalSeverity = "CRITICAL" | "HIGH";
+
+// Extend global Bun namespace with missing semver types
+declare global {
+	namespace Bun {
+		// Bun.semver types (missing from current bun-types)
+		namespace semver {
+			function satisfies(version: string, range: string): boolean;
+		}
+	}
+}

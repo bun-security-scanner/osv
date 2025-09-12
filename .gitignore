@@ -1,2 +1,46 @@
+# Copyright (c) 2025 maloma7. All rights reserved.
+# SPDX-License-Identifier: MIT
+
+# Dependencies
 node_modules
+bin/
+
+# Build output
+dist/
+build/
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Cache directories
+.cache/
+
+# Coverage reports
+coverage/
+*.lcov
+
+# Claude Code file
+CLAUDE.md
+.claude/
+.claude.json

@@ -1,0 +1,125 @@
+name: Bug Report
+description: Report a bug or issue with the scanner
+title: "[Bug]: "
+labels: ["bug"]
+assignees:
+  - maloma7
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the information below to help us reproduce and fix the issue.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission Checks
+      description: Please verify these items before submitting
+      options:
+        - label: I have searched existing issues to ensure this bug hasn't been reported
+          required: true
+        - label: I have read the troubleshooting section in the README
+          required: true
+        - label: This issue is specifically related to bun-osv-scanner (not Bun itself or OSV.dev)
+          required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: Describe what happened and what you expected to happen
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Detailed steps to reproduce the issue
+      placeholder: |
+        1. Configure bunfig.toml with...
+        2. Run `bun install...`
+        3. Observe...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should have happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened? Include error messages if any.
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Information
+      description: Please provide your environment details
+      placeholder: |
+        - OS: [e.g., macOS 14.0, Ubuntu 22.04, Windows 11]
+        - Bun version: [run `bun --version`]
+        - bun-osv-scanner version: [from package.json]
+        - Node.js version (if applicable): [run `node --version`]
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Configuration
+      description: Share your bunfig.toml and relevant environment variables
+      placeholder: |
+        bunfig.toml:
+        ```toml
+        [install.security]
+        scanner = "bun-osv-scanner"
+        ```
+        
+        Environment variables:
+        ```bash
+        OSV_LOG_LEVEL=debug
+        ```
+      render: markdown
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Debug Logs
+      description: |
+        Run with `OSV_LOG_LEVEL=debug` and include relevant log output.
+        Please redact any sensitive information.
+      placeholder: |
+        ```
+        [debug] Scanner output...
+        ```
+      render: markdown
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How severe is this bug?
+      options:
+        - Low (Minor inconvenience)
+        - Medium (Affects functionality)
+        - High (Blocks normal usage)
+        - Critical (Security issue or data loss)
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or information that might help
