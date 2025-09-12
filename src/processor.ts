@@ -127,10 +127,16 @@ export class VulnerabilityProcessor {
 		}
 
 		// Then CVE URLs
-		const cveRef = vuln.references.find(
-			(ref) =>
-				ref.url.includes("cve.mitre.org") || ref.url.includes("nvd.nist.gov"),
-		);
+		const cveRef = vuln.references.find((ref) => {
+			try {
+				const url = new URL(ref.url);
+				return (
+					url.hostname === "cve.mitre.org" || url.hostname === "nvd.nist.gov"
+				);
+			} catch {
+				return false;
+			}
+		});
 		if (cveRef) {
 			return cveRef.url;
 		}
