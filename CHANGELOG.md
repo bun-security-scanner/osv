@@ -1,3 +1,98 @@
+## [2.0.0](https://github.com/maloma7/bun-osv-scanner/compare/v1.0.1...v2.0.0) (2025-11-06)
+
+### ⚠ BREAKING CHANGES
+
+* **ci:** Replace manual release workflow with automated semantic-release
+
+This commit consolidates all CI/CD improvements into a single, production-ready
+configuration that uses modern npm OIDC authentication and eliminates 381 lines
+of custom bash scripts while adding 205 lines of declarative configuration.
+
+## Changes
+
+### CI/CD Transformation
+- Replace release.yml (233 lines) + publish.yml (148 lines) with unified ci.yml (135 lines)
+- Implement semantic-release v25.0.1 with conventional commits automation
+- Add OIDC authentication for npm (requires npm CLI 11.5.1+)
+- Configure proper permissions: id-token:write for OIDC, minimal for CI
+- Use npx (not bunx) for proven semantic-release compatibility
+- Set persist-credentials:false for security best practices
+
+### Automation Features
+- Automatic version bumping from commit types (feat→minor, fix→patch, BREAKING→major)
+- Automatic CHANGELOG.md generation and Git commit
+- Automatic GitHub releases with npm tarball assets
+- Automatic npm publishing with provenance attestations (via OIDC)
+- Comprehensive release rules for 11 commit types
+
+### Security Enhancements
+- TruffleHog v3.90+ secret scanning (GitHub Action, non-blocking)
+- OSV vulnerability scanning (non-blocking)
+- OIDC eliminates long-lived npm token storage and rotation
+- Automatic npm package provenance attestations
+- Minimal permission model per workflow job
+
+### Configuration Updates
+- Update domain: bun-osv-scanner.com → osv.bun-security-scanner.com
+- Enable Biome useIgnoreFile:true for VCS integration
+- Refactor logger.ts to use centralized ENV constants from constants.ts
+- Clean up copyright headers from config files
+
+### Dependencies (verified from npm registry)
+- semantic-release@25.0.1 (latest, published Nov 2025)
+- @semantic-release/changelog@6.0.3
+- @semantic-release/git@10.0.1
+- conventional-changelog-conventionalcommits@9.1.0 (latest)
+
+### Files Preserved
+- .commitlintrc.yml (commit linting, not CI-related)
+- .github/FUNDING.yml (sponsorship information)
+- .github/workflows/pages.yml (documentation deployment)
+
+## Migration Notes
+
+**OIDC Configuration Required on npmjs.com:**
+Configure trusted publishing at: https://www.npmjs.com/package/bun-osv-scanner/access
+- Organization/User: maloma7
+- Repository: bun-osv-scanner
+- Workflow file: .github/workflows/ci.yml
+- Environment: (leave empty - no environment restriction)
+
+**New Release Process:**
+- OLD: Manual workflow_dispatch → Select version → Approve → Publish
+- NEW: Push to main with conventional commit → Automatic release
+
+**Commit Format Requirements:**
+- feat: triggers minor release (1.x.0)
+- fix/perf/refactor: triggers patch release (1.0.x)
+- feat! or BREAKING CHANGE: triggers major release (x.0.0)
+- docs/test/ci/chore: no release
+
+**Example commits:**
+- feat: add new vulnerability scanner
+- fix: resolve memory leak in client
+- feat!: change API signature (breaking)
+- docs: update README
+
+## Testing
+
+Verified locally:
+- ✓ bun run build passes (lint + typecheck + test)
+- ✓ All 396 tests pass
+- ✓ bun pack --dry-run succeeds
+- ✓ .github/workflows/ci.yml YAML syntax valid
+
+## Net Impact
+- Code reduction: 381 lines deleted, 205 lines added = -176 lines (-46%)
+- Maintenance: Significantly reduced (no token rotation, no manual releases)
+- Security: Enhanced (OIDC, provenance, automated scans)
+- Developer Experience: Improved (push to main = auto release)
+- Time to Release: Reduced from 5+ minutes to <2 minutes
+
+### Features
+
+* **ci:** migrate to unified CI/CD with OIDC authentication ([7c5a948](https://github.com/maloma7/bun-osv-scanner/commit/7c5a9487495506095e9cc6a8ef16443f1a8fc1c7))
+
 <!--
 Copyright (c) 2025 maloma7. All rights reserved.
 SPDX-License-Identifier: MIT
